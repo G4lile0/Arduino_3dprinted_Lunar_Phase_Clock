@@ -31,13 +31,12 @@ by Dexter_New_Materials (<a rel="nofollow" href="http://www.thingiverse.com/thin
 <li>0,96'' OLED 128x64 with SSD1306 chip</li>
 <li>APA102C led strip  (18 leds)</li>
 <li>Tiny RTC (DS1307 real time clock + 24C32 EEPROM)</li>
+<li>DTH11 </li>
 <li>Buzzer </li>
 <li>3 Push Buttons</li>
 </ul>
-<p>Source available on GitHub:<br>
-<a rel="nofollow" href="https://github.com/G4lile0/Arduino_3dprinted_Lunar_Phase_Clock">https://github.com/G4lile0/Arduino_3dprinted_Lunar_Phase_Clock</a></p>
-<p>Video Created under Ubuntu with OpenShot video Editor.<br>
-Music : Sport Action</p>
+<p><br>
+</p>
 <h3>Reloj con fase Lunar impreso en 3D diseñado por G4lile0</h3>
 <p><strong>Como no todos los días hay una SuperLuna ¡¡fabrícate una para la mesilla de noche!!</strong></p>
 <p>Si no sabes que imprimir con tu impresora en 3d, aquí tienes un reloj con fase lunar para tu mesa. </p>
@@ -66,13 +65,11 @@ by Dexter_New_Materials (<a rel="nofollow" href="http://www.thingiverse.com/thin
 <li>0,96'' OLED 128x64 with SSD1306 chip</li>
 <li>APA102C led strip  (18 leds)</li>
 <li>Tiny RTC (DS1307 real time clock + 24C32 EEPROM)</li>
+<li>DTH11 </li>
 <li>Buzzer </li>
 <li>3 botones.</li>
 </ul>
-<p>Fuentes disponibles en GitHub:</p>
-<p><a rel="nofollow" href="https://github.com/G4lile0/Arduino_3dprinted_Lunar_Phase_Clock">https://github.com/G4lile0/Arduino_3dprinted_Lunar_Phase_Clock</a></p>
-<p>Vídeo creado bajo Ubuntu con OpenShot video Editor.<br>
-Musica : Sport Action</p>
+
 
 ##License
 
