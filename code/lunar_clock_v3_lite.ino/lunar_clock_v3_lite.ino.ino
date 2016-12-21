@@ -3,7 +3,7 @@
 /******************************************************************************
 Arduino 3D printed Lunar Clock
 by G4lile0 13/11/2016
-
+special version without DHT sensor ( so no Thermometer or Hygrometer )
 
 OLEd Analog Clock using U8GLIB Library
 // Button Long / Short Press script by: 
@@ -15,9 +15,9 @@ OLEd Analog Clock using U8GLIB Library
 // moon phase calculations,  algorithm adapted from Stephen R. Schmitt's by  Tim Farley  18 Aug 2009
 
 
-Note:: Sketch uses 97% of program storage space, 
-       Global variables use 55% of dyamic memory, 
-       leaving 912 bytes for local variables.
+Note:: Sketch uses 85% of program storage space, 
+       Global variables use 42% of dyamic memory, 
+       leaving 873 bytes for local variables.
 
 Using a IIC 128x64 OLED with SSD1306 chip
 RTC DS1307 
@@ -42,12 +42,14 @@ Wire TMP36:
 
 ******************************************************************************/
 
+
+
 // Add libraries
   #include "U8glib.h"
   #include <SPI.h>
   #include <Wire.h>
   #include "RTClib.h"
-  #include "DHT.h"
+//  #include "DHT.h"
   #include "FastLED.h"
 
   // How many leds in your strip?
@@ -88,7 +90,7 @@ boolean beep = true;
 #define DHTPIN 2     // what digital pin we're connected to
 
 // Uncomment whatever type you're using!
-#define DHTTYPE DHT11   // DHT 11
+//#define DHTTYPE DHT11   // DHT 11
 //#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
@@ -96,7 +98,7 @@ boolean beep = true;
 // Note that older versions of this library took an optional third parameter to
 // tweak the timings for faster processors.  This parameter is no longer needed
 // as the current DHT reading algorithm adjusts itself to work on faster procs.
-DHT dht(DHTPIN, DHTTYPE);
+//DHT dht(DHTPIN, DHTTYPE);
 
 
 // setup u8g object
@@ -216,14 +218,6 @@ ButtonHandler button2(BUTTON2_PIN, DEFAULT_LONGPRESS_LEN*2);
 ButtonHandler button3(BUTTON3_PIN);
 
 
-void print_event(const char* button_name, int event)
-{
-  if (event)
-    Serial.print(button_name);
-  //  Serial.print(".SL"[event]);
- //   Serial.print(event);
-}
-
 
 
 void rainbow() 
@@ -280,7 +274,7 @@ void menu0(void) {
   thisTime=thisTime + String(now.second());
   const char* newTime = (const char*) thisTime.c_str();
   
-  u8g.drawStr(10,10, newTime);  
+  u8g.drawStr(30,10, newTime);  
   // ********************* 
   //
   // Now draw the clock face
@@ -333,10 +327,10 @@ void menu0(void) {
    //char Tstr[5];
    //dtostrf(dht.readTemperature(), 3,0, Tstr);
    //String thisTemp1 = String(abs(dht.readTemperature())) + "C";
-   String thisTemp1 = String((int) dht.readTemperature()) + "C";
+//   String thisTemp1 = String((int) dht.readTemperature()) + "C";
       // printing output as follows used less program storage space
-   const char* thisTemp = (const char*) thisTemp1.c_str();
-   u8g.drawStr(90,10,thisTemp); 
+  // const char* thisTemp = (const char*) thisTemp1.c_str();
+ //  u8g.drawStr(90,10,thisTemp); 
    // the print command could be used, but uses more memory
    //u8g.setPrintPos(100,10); thisMonth="";
   for (int i=0; i<=2; i++){
@@ -461,6 +455,9 @@ if (blinking) u8g.drawFrame(91, 10, 35, 29) ;
 
 
 
+/*
+
+
 void menu2(void) {
     u8g.setFont(u8g_font_osb21n); 
     u8g.setScale2x2();  
@@ -495,9 +492,13 @@ void menu4(void) {
  
 }               
 
+ * 
+ */
+
 
 void menu5(void) {
 
+u8g.setFont(u8g_font_profont15r);
 char buf[4];
 u8g.drawStr( 0, 15, "Config Menu:");
 u8g.drawStr( 0, 33, "Bright:");  // de 34 a 33
@@ -595,10 +596,6 @@ void getPhase(int Y, int M, int D) {  // calculate the current phase of the moon
   IP = normalize((JD - 2451550.1) / 29.530588853);
   AG = IP*29.53;
   phase = IP*39;
-    Serial.print(AG);
-    Serial.println();
-    Serial.print(menu);
-    Serial.println();
     
 
 /*
@@ -690,8 +687,6 @@ void demoMode1(void) {
 
   //Modo DEMO
 
-
-
   empty();
   
   DateTime now = RTC.now();
@@ -718,8 +713,6 @@ void demoMode1(void) {
  leds[z+1] = CRGB::Black;
  leds[z+2] = CRGB::Black;
 
-// sprintf(buffer, "18 a 39 %d", (z+2));
-//    Serial.println(buffer);
 
   }
 
@@ -907,9 +900,7 @@ void crepuscularMode(void) {
    DateTime alarma =  DateTime( now.year(), now.month(),  now.day(), alarmHour, alarmMinute, 0);
    secondstoalarm =  alarma.unixtime()-now.unixtime();
 
-   sprintf(buffer, "unixtime %d", (secondstoalarm));
-   Serial.println(buffer);
-
+  
    if ((secondstoalarm>0) && (secondstoalarm<254)) {
       FastLED.setBrightness(255-secondstoalarm);
           for( int z=0; z < 18;z= z + 1 ){
@@ -940,8 +931,7 @@ double normalize(double v) {           // normalize moon calculation between 0-1
 
 
 void setup(void) {
-  Serial.begin(9600);
-
+  
   //We give the power supply to the DTH11 using the pin 3
   pinMode(3, OUTPUT);
   digitalWrite(3,HIGH);   
@@ -961,7 +951,7 @@ void setup(void) {
 // RTC.adjust(DateTime(__DATE__, __TIME__));
 
 if (! RTC.isrunning()) {
-   Serial.println("RTC is NOT running!");
+   
  // following line sets the RTC to the date & time this sketch was compiled
    RTC.adjust(DateTime(__DATE__, __TIME__));
  }
@@ -1026,7 +1016,7 @@ unsigned long currentMillis = millis();
 
                      
                   case 2:                       
-                     menu2();
+                     menu3();
                      break;  
 
                   case 31:                       
@@ -1042,7 +1032,7 @@ unsigned long currentMillis = millis();
                      menu3();
                      break;
                   case 4:                       
-                     menu4();
+                     menu3();
                      break;
                      
                   case 5:                       
