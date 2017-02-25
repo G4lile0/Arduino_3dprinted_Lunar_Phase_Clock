@@ -8,7 +8,7 @@ by G4lile0
 V3.0 13/11/2016
 - First public release
 
-V4.0 13/2/2017
+V4.0 25/2/2017
 - Status is now stored on the RTC NVRAM, this mean that after power failure, clock will return to the old status, moon mode, and alarm configuration instead of load defaul configuration.
 NVRAM configuration
 00  init_controlA   // if init_contrl_A and B is not 16, NVRAM will load default values
