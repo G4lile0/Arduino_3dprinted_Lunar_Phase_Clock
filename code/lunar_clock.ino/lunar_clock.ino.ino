@@ -8,7 +8,7 @@ by G4lile0
 V3.0 13/11/2016
 - First public release
 
-V4.0 25/2/2017
+V4.0 25/02/2017
 - Status is now stored on the RTC NVRAM, this mean that after power failure, clock will return to the old status, moon mode, and alarm configuration instead of load defaul configuration.
 NVRAM configuration
 00  init_controlA   // if init_contrl_A and B is not 16, NVRAM will load default values
@@ -21,6 +21,8 @@ NVRAM configuration
 07  alarmMinute   // alarm minute
 08  alarmStatus   // Alam status
 
+V4.1  26/02/2017
+Added new screen/menu with bigger digital clock.
 
 
 
@@ -583,6 +585,28 @@ if (blinking) u8g.drawFrame(77, 51, 45, 13) ;
 
 
 
+void menu6(void) {
+
+    u8g.setFont(u8g_font_osb21n); 
+    u8g.setScale2x2();  
+ 
+  DateTime now = RTC.now();
+  thisTime=String(now.hour()) + "";
+  if (now.minute() < 10){ thisTime=thisTime + "0";} // add leading zero if required
+  thisTime=thisTime + String(now.minute());
+  const char* newTime = (const char*) thisTime.c_str();
+  if (now.hour()  < 10){ u8g.drawStr(14,30, newTime);} else {u8g.drawStr(-2,30, newTime);} // add leading space if required
+
+  
+  u8g.setFont(u8g_font_profont15r);
+  if (blinking) u8g.drawStr(27,30,"."); 
+  u8g.undoScale(); 
+
+
+}
+
+
+
 
 
 void getPhase(int Y, int M, int D) {  // calculate the current phase of the moon
@@ -827,10 +851,8 @@ void demoMode5()
  
   rainbow();
   addGlitter(80);
-    
   gHue++; 
   FastLED.show();
-
 
 }
 
@@ -998,11 +1020,11 @@ alarmMinute = RTC.readnvram(7);
 alarmStatus = RTC.readnvram(8);
 
 
-   Serial.println(RTC.readnvram(0), DEC);
-   Serial.println(RTC.readnvram(1), DEC);
-   Serial.println(RTC.readnvram(2), DEC);
-   Serial.println(RTC.readnvram(3), DEC);
-   Serial.println(RTC.readnvram(4), DEC);
+//   Serial.println(RTC.readnvram(0), DEC);
+//   Serial.println(RTC.readnvram(1), DEC);
+//   Serial.println(RTC.readnvram(2), DEC);
+//   Serial.println(RTC.readnvram(3), DEC);
+//   Serial.println(RTC.readnvram(4), DEC);
 
 
 
@@ -1097,6 +1119,11 @@ unsigned long currentMillis = millis();
                   case 53:                       
                      menu53();
                      break;               
+
+                case 6:                       
+                     menu6();
+                     break;
+
                
                }
 
@@ -1192,7 +1219,6 @@ DateTime now = RTC.now();
                   case 53:
                   moonMode=(moonMode+1)% 9;
                   
-                  
                   break;
                   
                
@@ -1205,8 +1231,9 @@ DateTime now = RTC.now();
 if ((alarmStatus) && (!alarm_button_off)) {
   
   if ((now.hour()==alarmHour) && (now.minute()== alarmMinute)) {
-      moonMode=7
-      ;
+      
+      moonMode=7;
+      
       if (blinking) tone (11,6000,60);
             
       if ((event1 ==1) or (event2 ==1) or (event3 == 1)) { 
@@ -1216,7 +1243,6 @@ if ((alarmStatus) && (!alarm_button_off)) {
       }
           }
   }
-
 
 //rearm the alarm_button_off
 if ((now.hour()==alarmHour) && (now.minute()== (alarmMinute+1))) alarm_button_off= false;
@@ -1270,6 +1296,7 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                   case 53:
                   moonMode=(moonMode+1)% 9;
                   break;
+
 
                }
          }
@@ -1340,7 +1367,7 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                      break;
           
         case 5:                    
-                     menu=0;
+                     menu=6;
                      write_NVRAM();
                      break;
 
@@ -1354,7 +1381,11 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                      menu=5;
                      write_NVRAM();
                      break;
-          
+        case 6:                    
+                     menu=0;
+                     write_NVRAM();
+                     break;
+         
                }
           }
 
