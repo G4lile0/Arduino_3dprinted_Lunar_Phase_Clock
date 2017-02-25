@@ -2,7 +2,26 @@
 
 /******************************************************************************
 Arduino 3D printed Lunar Clock
-by G4lile0 13/11/2016
+by G4lile0 
+
+
+V3.0 13/11/2016
+- First public release
+
+V4.0 13/2/2017
+- Status is now stored on the RTC NVRAM, this mean that after power failure, clock will return to the old status, moon mode, and alarm configuration instead of load defaul configuration.
+NVRAM configuration
+00  init_controlA   // if init_contrl_A and B is not 16, NVRAM will load default values
+01  init_controlB  // 
+02  BRIGHTNESS    // Leds Brightness 
+03  beep          // Buttons Beep
+04  menu          // menu status
+05  moonMode      // Moon Mode
+06  alarmHour     // alarm hour
+07  alarmMinute   // alarm minute
+08  alarmStatus   // Alam status
+
+
 
 
 OLEd Analog Clock using U8GLIB Library
@@ -14,10 +33,9 @@ OLEd Analog Clock using U8GLIB Library
 // Analog clock (first screen) from "OLEd Analog Clock using U8GLIB Library" by Chris Rouse Oct 2014
 // moon phase calculations,  algorithm adapted from Stephen R. Schmitt's by  Tim Farley  18 Aug 2009
 
-
-Note:: Sketch uses 97% of program storage space, 
-       Global variables use 55% of dyamic memory, 
-       leaving 912 bytes for local variables.
+Note:: Sketch uses 99% of program storage space, 
+       Global variables use 56% of dyamic memory, 
+       leaving 882 bytes for local variables.
 
 Using a IIC 128x64 OLED with SSD1306 chip
 RTC DS1307 
@@ -81,10 +99,6 @@ const long period_Blinking = 500;
 // BEEP (to enable o disable buttons BEEPs) 
 boolean beep = true;
 
-
-
-
-
 #define DHTPIN 2     // what digital pin we're connected to
 
 // Uncomment whatever type you're using!
@@ -118,7 +132,6 @@ DHT dht(DHTPIN, DHTTYPE);
 // Menu variables
 
 byte menu = 0;
-
 byte moonMode=0;
 
 //temp
@@ -131,7 +144,7 @@ int y, m, d, h;
 // Alarm Clock
 byte alarmHour   = 17; // alarm hour
 byte alarmMinute = 04; // alarm minute
-boolean alarmStatus = true; 
+boolean alarmStatus = false; 
 boolean alarm_button_off = false ; 
 
 // Adapt these to your board and application timings:
@@ -923,7 +936,6 @@ FastLED.show();
 
 
 
-
 double normalize(double v) {           // normalize moon calculation between 0-1
     v = v - floor(v);
     if (v < 0)
@@ -932,9 +944,10 @@ double normalize(double v) {           // normalize moon calculation between 0-1
 }
 
 
-
-
-
+void write_NVRAM(void) {
+  uint8_t writeData[9] = {16,16, BRIGHTNESS,beep,menu,moonMode,alarmHour,alarmMinute,alarmStatus };
+  RTC.writenvram(0, writeData , 9);
+}
 
 
 
@@ -946,25 +959,51 @@ void setup(void) {
   pinMode(3, OUTPUT);
   digitalWrite(3,HIGH);   
 
-
-
   // init buttons pins; I suppose it's best to do here
   button1.init();
   button2.init();
   button3.init();
 
   
-  
   Wire.begin();
 // RTC.begin();
 // // following line sets the RTC to the date & time this sketch was compiled
 // RTC.adjust(DateTime(__DATE__, __TIME__));
+
 
 if (! RTC.isrunning()) {
    Serial.println("RTC is NOT running!");
  // following line sets the RTC to the date & time this sketch was compiled
    RTC.adjust(DateTime(__DATE__, __TIME__));
  }
+
+if (!((RTC.readnvram(0)==16) & (RTC.readnvram(1)==16))) {
+   Serial.println("Writing NVRAM default data");
+// following line sets the NVRAM default data
+
+//  uint8_t writeData[9] = {16,16, BRIGHTNESS,beep,menu,moonMode,alarmHour,alarmMinute,alarmStatus };
+//  RTC.writenvram(0, writeData , 9);
+  write_NVRAM();
+  
+ }
+
+// reading data from NVRAM
+
+BRIGHTNESS = RTC.readnvram(2);
+beep = RTC.readnvram(3);
+menu = RTC.readnvram(4);
+moonMode = RTC.readnvram(5);
+alarmHour = RTC.readnvram(6);
+alarmMinute = RTC.readnvram(7);
+alarmStatus = RTC.readnvram(8);
+
+
+   Serial.println(RTC.readnvram(0), DEC);
+   Serial.println(RTC.readnvram(1), DEC);
+   Serial.println(RTC.readnvram(2), DEC);
+   Serial.println(RTC.readnvram(3), DEC);
+   Serial.println(RTC.readnvram(4), DEC);
+
 
 
  //  FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -1245,13 +1284,15 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
  // Action of the Short Press on Button 1 within each Menu.
    if (event1 == 1)
           { if (beep) tone (11,2000,20);
-             switch (menu)
+            switch (menu)
                {
                   case 0:                       
                      menu=1;
+                     write_NVRAM();
                      break;     
                   case 1:                       
                      menu=2;
+                     write_NVRAM();
                      break;
                   case 11:                       
                      menu=12;
@@ -1270,14 +1311,17 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                      break;  
                   case 16:                       
                      menu=1;
+                     write_NVRAM();
                      break;  
                   
                   case 2:                     
                      menu=3;
+                     write_NVRAM();
                      break;
  
                   case 3:                    
                      menu=4;
+                     write_NVRAM();
                      break;
                   case 31:                     
                      menu=32;
@@ -1287,14 +1331,17 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                      break;
                   case 33:                     
                      menu=3;
+                     write_NVRAM();
                      break;
 
         case 4:                    
                      menu=5;
+                     write_NVRAM();
                      break;
           
         case 5:                    
                      menu=0;
+                     write_NVRAM();
                      break;
 
                   case 51:                     
@@ -1305,6 +1352,7 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                      break;
                   case 53:                     
                      menu=5;
+                     write_NVRAM();
                      break;
           
                }

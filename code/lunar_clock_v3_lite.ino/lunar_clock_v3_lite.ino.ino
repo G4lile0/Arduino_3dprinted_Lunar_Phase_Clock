@@ -133,7 +133,7 @@ int y, m, d, h;
 // Alarm Clock
 byte alarmHour   = 17; // alarm hour
 byte alarmMinute = 04; // alarm minute
-boolean alarmStatus = true; 
+boolean alarmStatus = false; 
 boolean alarm_button_off = false ; 
 
 // Adapt these to your board and application timings:
