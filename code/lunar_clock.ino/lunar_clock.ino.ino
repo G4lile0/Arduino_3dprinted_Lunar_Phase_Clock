@@ -20,10 +20,14 @@ NVRAM configuration
 06  alarmHour     // alarm hour
 07  alarmMinute   // alarm minute
 08  alarmStatus   // Alam status
+09  previous moonMode before the alarm.
 
 V4.1  26/02/2017
 Added new screen/menu with bigger digital clock.
 
+V4.2  26/02/2017
+After an alarm return to the previous status after 1 min.
+Fixed bug, when switching the alarm, modify the day of the month :P
 
 
 OLEd Analog Clock using U8GLIB Library
@@ -231,13 +235,13 @@ ButtonHandler button2(BUTTON2_PIN, DEFAULT_LONGPRESS_LEN*2);
 ButtonHandler button3(BUTTON3_PIN);
 
 
-void print_event(const char* button_name, int event)
-{
-  if (event)
-    Serial.print(button_name);
-  //  Serial.print(".SL"[event]);
- //   Serial.print(event);
-}
+//void print_event(const char* button_name, int event)
+//{
+//  if (event)
+//  Serial.print(button_name);
+//  Serial.print(".SL"[event]);
+//  Serial.print(event);
+//}
 
 
 
@@ -632,10 +636,10 @@ void getPhase(int Y, int M, int D) {  // calculate the current phase of the moon
   IP = normalize((JD - 2451550.1) / 29.530588853);
   AG = IP*29.53;
   phase = IP*39;
-    Serial.print(AG);
-    Serial.println();
-    Serial.print(menu);
-    Serial.println();
+ //   Serial.print(AG);
+ //   Serial.println();
+ //   Serial.print(menu);
+ //   Serial.println();
     
 
 /*
@@ -942,8 +946,8 @@ void crepuscularMode(void) {
    DateTime alarma =  DateTime( now.year(), now.month(),  now.day(), alarmHour, alarmMinute, 0);
    secondstoalarm =  alarma.unixtime()-now.unixtime();
 
-   sprintf(buffer, "unixtime %d", (secondstoalarm));
-   Serial.println(buffer);
+//   sprintf(buffer, "unixtime %d", (secondstoalarm));
+//   Serial.println(buffer);
 
    if ((secondstoalarm>0) && (secondstoalarm<254)) {
       FastLED.setBrightness(255-secondstoalarm);
@@ -975,7 +979,7 @@ void write_NVRAM(void) {
 
 
 void setup(void) {
-  Serial.begin(9600);
+//  Serial.begin(9600);
 
   //We give the power supply to the DTH11 using the pin 3
   pinMode(3, OUTPUT);
@@ -994,18 +998,18 @@ void setup(void) {
 
 
 if (! RTC.isrunning()) {
-   Serial.println("RTC is NOT running!");
+ //   Serial.println("RTC is NOT running!");
  // following line sets the RTC to the date & time this sketch was compiled
    RTC.adjust(DateTime(__DATE__, __TIME__));
  }
 
+// following line sets the NVRAM default data, only for the first time.
 if (!((RTC.readnvram(0)==16) & (RTC.readnvram(1)==16))) {
-   Serial.println("Writing NVRAM default data");
-// following line sets the NVRAM default data
-
+//   Serial.println("Init NVRAM");
 //  uint8_t writeData[9] = {16,16, BRIGHTNESS,beep,menu,moonMode,alarmHour,alarmMinute,alarmStatus };
 //  RTC.writenvram(0, writeData , 9);
   write_NVRAM();
+  RTC.writenvram(9,moonMode);
   
  }
 
@@ -1196,6 +1200,7 @@ DateTime now = RTC.now();
                    break;
                   case 16:
                   alarmStatus=!alarmStatus;
+                  break;
 
                   case 31:
                    RTC.adjust(DateTime( now.year(), now.month(),  (now.day()+1)%32, now.hour(), now.minute(), now.second()));
@@ -1218,9 +1223,7 @@ DateTime now = RTC.now();
 
                   case 53:
                   moonMode=(moonMode+1)% 9;
-                  
                   break;
-                  
                
                }
          }
@@ -1228,26 +1231,33 @@ DateTime now = RTC.now();
 
 
 
+// we store the status of the Moon, prior to run the alarm
+if ((now.hour()==alarmHour) && (now.minute()== alarmMinute) && (now.second()==0)) {
+   RTC.writenvram(9,moonMode);
+   delay(1000); // to avoid to run this code two times.
+      }
+
 if ((alarmStatus) && (!alarm_button_off)) {
+
   
   if ((now.hour()==alarmHour) && (now.minute()== alarmMinute)) {
-      
+     
       moonMode=7;
-      
       if (blinking) tone (11,6000,60);
             
       if ((event1 ==1) or (event2 ==1) or (event3 == 1)) { 
         alarm_button_off= true;
-        moonMode=0;
-      
+        moonMode = RTC.readnvram(9);
       }
           }
   }
 
-//rearm the alarm_button_off
-if ((now.hour()==alarmHour) && (now.minute()== (alarmMinute+1))) alarm_button_off= false;
-if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_off= false;
-
+//rearm the alarm_button_off or disable alarm after one minute.
+if (((now.hour()==alarmHour) && (now.minute()== (alarmMinute+1))) || ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute)))) {
+alarm_button_off= false;
+moonMode = RTC.readnvram(9);
+ 
+}
 
 
  // Action of the Short Press on Button 3 within each Menu.
@@ -1272,6 +1282,7 @@ if ((now.hour()==alarmHour) && (now.minute()+1== (alarmMinute))) alarm_button_of
                    break;
                   case 16:
                   alarmStatus=!alarmStatus;
+                  break;
 
                   case 31:
                    RTC.adjust(DateTime( now.year(), now.month(),  now.day()-1, now.hour(), now.minute(), now.second()));
