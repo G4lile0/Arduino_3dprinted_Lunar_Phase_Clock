@@ -29,6 +29,9 @@ V4.2  26/02/2017
 After an alarm return to the previous status after 1 min.
 Fixed bug, when switching the alarm, modify the day of the month :P
 
+V4.2b  5/03/2017
+Month format changed to double digit format.
+
 
 OLEd Analog Clock using U8GLIB Library
 // Button Long / Short Press script by: 
@@ -447,7 +450,12 @@ void menu3(void) {
   if (now.day() < 10){ thisDay="_";} // add leading space if required
   thisDay = String(now.day(), DEC) + "/"; 
   // thisDay=thisDay + thisMonth + "/"; 
+
+  if (now.month() < 10){ thisDay=thisDay+ "0";} // add leading space if required
+
+  
   thisDay=thisDay + String(now.month() , DEC);
+
   thisDay=thisDay + thisMonth + "/"; 
 // to add only the 3rd and the 4th digit.. other option is to subtract 2000
   thisDay=thisDay + String((now.year()-2000) , DEC);
