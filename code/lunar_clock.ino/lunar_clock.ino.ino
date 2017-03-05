@@ -1,5 +1,3 @@
-
-
 /******************************************************************************
 Arduino 3D printed Lunar Clock
 by G4lile0 
@@ -30,7 +28,7 @@ After an alarm return to the previous status after 1 min.
 Fixed bug, when switching the alarm, modify the day of the month :P
 
 V4.2b  5/03/2017
-Month format changed to double digit format.
+Month changed to double digit format.
 
 
 OLEd Analog Clock using U8GLIB Library
